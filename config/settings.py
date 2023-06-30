@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
+import environ
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -39,9 +41,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
+    'uploader',
     'livraria',
     'rest_framework_simplejwt',
+    'usuario',
+    'drf_spectacular'
 ]
+
+AUTH_USER_MODEL = "usuario.Usuario"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -108,10 +115,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
+LANGUAGE_CODE = "pt-br"
+TIME_ZONE = "America/Sao_Paulo"
 USE_I18N = True
 
 USE_TZ = True
@@ -127,13 +132,35 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
+MEDIA_URL = "http://localhost:8000/api/media/"
+MEDIA_ENDPOINT = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
+FILE_UPLOAD_PERMISSIONS = 0o640
+
 CORS_ALLOW_ALL_ORIGINS = True
 
 REST_FRAMEWORK = {
-      "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.DjangoModelPermissions",
-    ],
-    "DEFAULT_AUTHENTICATION_CLASSES": (
+     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+     "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.DjangoModelPermissions",
+    ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Livraria API",
+    "DESCRIPTION": "API para gerenciamento de livraria, incluindo endpoints e documentação.",
+    "VERSION": "1.0.0",
+}
+
+# Carrega as variáveis de ambiente do sistema operacional e as prepara para usá-las
+env = environ.Env()
+environ.Env.read_env((os.path.join(BASE_DIR, '.env')))
+
+SECRET_KEY = env('SECRET_KEY')
+DEBUG = env('DEBUG')
+ALLOWED_HOSTS = env('ALLOWED_HOSTS').split(',')
+DATABASES = {'default': env.db()}
